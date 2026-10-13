@@ -3,6 +3,11 @@ import { Toaster } from "react-hot-toast";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/login";
 import Drive from "./pages/Drive";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import DashboardLayout from "./components/layout/DashboardLayout";
+import SharedFile from "./pages/SharedFile";
+import Trash from "./pages/Trash";
+import SharedWithMe from "./pages/SharedWithMe";
 
 const App = () => {
   return (
@@ -11,7 +16,17 @@ const App = () => {
       <Routes>
         <Route path="/login" element={<Login mode="login" />} />
         <Route path="/register" element={<Login mode="register" />} />
-        <Route path="/" element={<Drive />} />
+        <Route path="/s/:token" element={<SharedWithMe />} />
+        {/* Private route */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<DashboardLayout />}>
+            <Route path="/" element={<Drive />} />
+            <Route path="/drive/:folderId" element={<Drive />} />
+            <Route path="/shared" element={<SharedFile />} />
+            <Route path="/trash" element={<Trash />} />
+          </Route>
+        </Route>
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
