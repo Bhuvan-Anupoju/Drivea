@@ -86,7 +86,7 @@ export const AppProvider = ({ children }) => {
       toast.error("Logout error");
     }
   };
-  const fetchDriveContent = useCallback(() => {
+  const fetchDriveContent = useCallback(
     async (folderId = currentFolderId, search = searchQuery, sort = sortBy) => {
       if (!user) return;
       setIsDriveLoading(true);
@@ -107,8 +107,9 @@ export const AppProvider = ({ children }) => {
       } finally {
         setIsDriveLoading(false);
       }
-    };
-  }, [user, currentFolderId, searchQuery, sortBy]);
+    },
+    [user, currentFolderId, searchQuery, sortBy],
+  );
 
   const value = {
     user,
