@@ -1,5 +1,6 @@
 import toast from "react-hot-toast";
 import { useApp } from "../context/appContext";
+import api from "../config/api";
 
 const isFolderItem = (item) =>
   item?.item_type === "folder" ||
@@ -120,34 +121,35 @@ export function useDrive() {
       () => fetchDriveContent(),
     );
   };
-    const restoreItem = (item) => {
-      const endpoint = isFolderItem(item) ? "folders" : "files";
-      const id = item.id || item;
-      return runAction(
-        api.post(`/api/${endpoint}/${id}/restore`),
-        "Item restored.",
-        "Error restoring item."
-      );
-    };
+  const restoreItem = (item) => {
+    const endpoint = isFolderItem(item) ? "folders" : "files";
+    const id = item.id || item;
+    return runAction(
+      api.post(`/api/${endpoint}/${id}/restore`),
+      "Item restored.",
+      "Error restoring item.",
+    );
+  };
 
-     const permanentDeleteItem = (item) => {
-       const endpoint = isFolderItem(item) ? "folders" : "files";
-       const id = item.id || item;
-       return runAction(
-         api.delete(`/api/${endpoint}/${id}/permanent`),
-         "Item permanently deleted",
-         "Error deleting item", () => refreshUser()
-       );
-     };
-     return {
-      uploadFiles,
-      createFolder,
-      renameItem,
-      moveItem,
-      deleteItem,
-      renameItem,
-      permanentDeleteItem,
-      isUploading,
-      uploadProgress
-     }
+  const permanentDeleteItem = (item) => {
+    const endpoint = isFolderItem(item) ? "folders" : "files";
+    const id = item.id || item;
+    return runAction(
+      api.delete(`/api/${endpoint}/${id}/permanent`),
+      "Item permanently deleted",
+      "Error deleting item",
+      () => refreshUser(),
+    );
+  };
+  return {
+    uploadFiles,
+    createFolder,
+    renameItem,
+    moveItem,
+    deleteItem,
+    renameItem,
+    permanentDeleteItem,
+    isUploading,
+    uploadProgress,
+  };
 }
