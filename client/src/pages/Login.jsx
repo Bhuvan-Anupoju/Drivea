@@ -1,4 +1,3 @@
-import React from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Input } from "../components/ui/Input";
@@ -50,7 +49,7 @@ const Login = ({ mode = "login" }) => {
         </div>
         <div className="relative z-10 text-sm text-zinc-500">
           {" "}
-          &copy; 2026 GreatStack. All rights reserved.
+          &copy; 2026 BhuvanAnupoju. All rights reserved.
         </div>
       </div>
       <div className="md:w-1/2 p-8 md:p-12 lg:p-16 flex items-center justify-center bg-white">
