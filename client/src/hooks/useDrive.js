@@ -73,8 +73,8 @@ export function useDrive() {
 
   // Create Folder
   const createFolder = async (name, parent_id = currentFolderId) => {
-    runAction(
-      api.post("api/folders", { name, parent_id }),
+    return await runAction(
+      api.post("/api/folders", { name, parent_id }),
       "Folder created.",
       "Error creating folder",
       () => fetchDriveContent(parent_id),
@@ -147,7 +147,7 @@ export function useDrive() {
     renameItem,
     moveItem,
     deleteItem,
-    renameItem,
+    restoreItem,
     permanentDeleteItem,
     isUploading,
     uploadProgress,

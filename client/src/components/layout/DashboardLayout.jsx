@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import CreateFolderModal from "../folders/CreateFolderModal";
 
 const DashboardLayout = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -23,6 +24,13 @@ const DashboardLayout = () => {
           <Outlet />
         </main>
       </div>
+      {/* Create Folder Modal */}
+      <CreateFolderModal
+        isOpen={isCreateFolderOpen}
+        onClose={() => {
+          setIsCreateFolderOpen(false);
+        }}
+      />
     </div>
   );
 };
