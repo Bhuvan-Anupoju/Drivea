@@ -123,12 +123,19 @@ export const permanentDeleteFolderHierarchy = async (folderId, ownerId) => {
 
 // Permanently delete a single file.
 export const permanentDeleteFileRecord = async (file, ownerId) => {
-  await Promise.all([
-    deleteFromStorage(file.s3_key),
-    cleanupShareLinks([file.id], []),
-    sql`
-    DELETE FROM files WHERE id = ${file.id}`,
-  ]);
+  // First delete the actual object from S3
+  await deleteFromStorage(file.s3_key);
+
+  // Only delete database record after S3 deletion succeeds
+  await cleanupShareLinks([file.id], []);
+
+  await sql`
+    DELETE FROM files
+    WHERE id = ${file.id}
+      AND owner_id = ${ownerId}
+  `;
+
+  // Update user's storage usage
   await adjustUserStorage(ownerId, -Number(file.size));
 };
 
@@ -159,24 +166,28 @@ export const emptyTrashHierarchy = async (ownerId) => {
     0,
   );
 
-  await Promise.all([
-    s3Keys.length > 0 ? deleteMultipleFromStorage(s3Keys) : Promise.resolve(),
+  // Delete storage objects first
+  if (s3Keys.length > 0) {
+    await deleteMultipleFromStorage(s3Keys);
+  }
 
-    cleanupShareLinks(trashedFileIds, trashedFolderIds),
+  // Clean up share links
+  await cleanupShareLinks(trashedFileIds, trashedFolderIds);
 
-    sql`
-      DELETE FROM files
-      WHERE owner_id = ${ownerId}
-        AND is_trashed = true
-    `,
+  // Delete database records
+  await sql`
+    DELETE FROM files
+    WHERE owner_id = ${ownerId}
+      AND is_trashed = true
+  `;
 
-    sql`
-      DELETE FROM folders
-      WHERE owner_id = ${ownerId}
-        AND is_trashed = true
-    `,
-  ]);
+  await sql`
+    DELETE FROM folders
+    WHERE owner_id = ${ownerId}
+      AND is_trashed = true
+  `;
 
+  // Update storage quota
   if (totalFreedBytes > 0) {
     await adjustUserStorage(ownerId, -totalFreedBytes);
   }
