@@ -11,7 +11,11 @@ import shareRouter from "./routes/shareRoutes.js";
 
 const app = express();
 
-const allowedOrigins = (process.env.ORIGINS || "http://localhost:5173")
+const allowedOrigins = (
+  process.env.ORIGINS ||
+  "https://drivea-uf4y-bhuvan9.vercel.app" ||
+  "http://localhost:5173"
+)
   .split(",")
   .map((origin) => origin.trim());
 
