@@ -1,14 +1,14 @@
 import React from "react";
 import { Toaster } from "react-hot-toast";
 import { Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/login";
+import Login from "./pages/Login";
 import Drive from "./pages/Drive";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import SharedFile from "./pages/SharedFile";
 import Trash from "./pages/Trash";
 import SharedWithMe from "./pages/SharedWithMe";
-
+// Updated the Login error
 const App = () => {
   return (
     <>
