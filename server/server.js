@@ -18,15 +18,14 @@ const allowedOrigins = (
   .split(",")
   .map((origin) => origin.trim());
 
+app.use(express.json({ limit: "100mb" }));
+app.use(cookieParser());
 app.use(
   cors({
     origin: allowedOrigins,
     credentials: true,
   }),
 );
-
-app.use(cookieParser());
-app.use(express.json({ limit: "100mb" }));
 
 app.get("/", (_req, res) => {
   res.send("Server is Running!!");

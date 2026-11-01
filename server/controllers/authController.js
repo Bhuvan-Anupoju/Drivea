@@ -12,13 +12,14 @@ export const sendTokenResponse = (
   const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: "7d",
   });
-  const isProduction = process.env.NODE_ENV === "production";
+  const isProduction =
+    process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
 
   res.cookie("token", token, {
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? "none" : "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Days
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   res.status(statusCode).json({ token, ...extraData });
@@ -90,7 +91,9 @@ export const loginUser = async (req, res) => {
 // POST /api/auth/logout
 export const logoutUser = async (_req, res) => {
   try {
-    const isProduction = process.env.NODE_ENV === "production";
+    const isProduction =
+      process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
+
     res.clearCookie("token", {
       httpOnly: true,
       secure: isProduction,
