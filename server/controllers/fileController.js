@@ -210,26 +210,55 @@ export const renameFile = async (req, res) => {
 // PATCH /api/files/:id/move
 export const moveFile = async (req, res) => {
   try {
-    const targetFolder = req.body.target_folder ?? req.body.targetFolder;
-    if (targetFolder) {
+    const targetFolder =
+      req.body.targetFolderId ??
+      req.body.target_folder ??
+      req.body.targetFolder ??
+      null;
+
+    // Validate destination folder
+    if (targetFolder !== null) {
       const [destFolder] = await sql`
-      SELECT id FROM folders
-      WHERE id = ${targetFolder} AND owner_id = ${req.user.id} AND is_trashed = false`;
+        SELECT id FROM folders
+        WHERE id = ${targetFolder}
+          AND owner_id = ${req.user.id}
+          AND is_trashed = false
+      `;
+
       if (!destFolder) {
-        return res.status(404).json({ error: "Destination folder not found." });
+        return res.status(404).json({
+          error: "Destination folder not found.",
+        });
       }
     }
+
+    // Update file's destination
     const [file] = await sql`
-    UPDATE files
-    SET folder_id = ${targetFolder || null}, updated_at = NOW()
-    WHERE id = ${req.params.id} AND owner_id = ${req.user.id} AND is_trashed = false
-    RETURNING *`;
+      UPDATE files
+      SET folder_id = ${targetFolder},
+          updated_at = NOW()
+      WHERE id = ${req.params.id}
+        AND owner_id = ${req.user.id}
+        AND is_trashed = false
+      RETURNING *
+    `;
+
     if (!file) {
-      return res.status(500).json({ error: "File not found" });
+      return res.status(404).json({
+        error: "File not found.",
+      });
     }
-    return res.status(200).json({ file });
+
+    return res.status(200).json({
+      message: "File moved successfully.",
+      file,
+    });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    console.error("Move file error:", error);
+
+    return res.status(500).json({
+      error: error.message,
+    });
   }
 };
 
