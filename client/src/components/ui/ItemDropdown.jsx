@@ -22,7 +22,7 @@ export function ItemDropdown({
         trigger={
           <button
             type="button"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
             <MoreVerticalIcon className="size-4" />
           </button>
@@ -33,15 +33,19 @@ export function ItemDropdown({
             Preview
           </DropdownItem>
         )}
+
         <DropdownItem icon={Share2Icon} onClick={() => onShare(item)}>
           Share Link
         </DropdownItem>
+
         <DropdownItem icon={Edit2Icon} onClick={() => onRename(item)}>
           Rename
         </DropdownItem>
+
         <DropdownItem icon={FolderInputIcon} onClick={() => onMove(item)}>
           Move to...
         </DropdownItem>
+
         <DropdownItem icon={Trash2Icon} danger onClick={() => onDelete(item)}>
           Delete
         </DropdownItem>
