@@ -1,4 +1,5 @@
 import { sql } from "../config/db.js";
+import jwt from "jsonwebtoken";
 
 // Mandatory authentication guard reading token directly from cookie
 export const protect = async (req, res, next) => {

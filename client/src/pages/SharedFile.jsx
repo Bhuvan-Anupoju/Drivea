@@ -48,7 +48,7 @@ const SharedFile = () => {
     if (!deletingShare) return;
     setIsDeleting(true);
     try {
-      await api.delete(`api/shares/${deletingShare.id}`);
+      await api.delete(`/api/shares/${deletingShare.id}`);
       toast.success("Shared link deleted");
       setShares((prev) => prev.filter((s) => s.id != deletingShare.id));
     } catch (err) {

@@ -1,4 +1,4 @@
-import { neon, Pool } from "@neondatabase/serverless";
+import { neon } from "@neondatabase/serverless";
 export const sql = neon(process.env.DATABASE_URL);
 
 export async function initDB() {
@@ -73,5 +73,6 @@ export async function initDB() {
     console.log("Database initialized successfully");
   } catch (err) {
     console.error("Error initializing database:", err);
+    throw err;
   }
 }

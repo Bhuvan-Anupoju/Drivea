@@ -11,39 +11,44 @@ import shareRouter from "./routes/shareRoutes.js";
 
 const app = express();
 
-// CORS configuration
-const allowedOrigins = process.env.ORIGINS.split(",");
-app.use(cors({ origin: allowedOrigins, credentials: true }));
+const allowedOrigins = (process.env.ORIGINS || "http://localhost:5173")
+  .split(",")
+  .map((origin) => origin.trim());
 
-// Middlewares
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  }),
+);
+
 app.use(cookieParser());
 app.use(express.json({ limit: "100mb" }));
 
-// Root API
-app.get("/", (_req, res) => res.send("Server is Running!!"));
+app.get("/", (_req, res) => {
+  res.send("Server is Running!!");
+});
 
-//App API routes
 app.use("/api/auth", authRouter);
 app.use("/api/folders", folderRouter);
 app.use("/api/files", fileRouter);
 app.use("/api/trash", trashRouter);
-app.use("api/shares", shareRouter);
+app.use("/api/shares", shareRouter);
 
-// Error handling middleware
 app.use((err, _req, res, _next) => {
-  res
-    .status(err.status || 500)
-    .json({ error: err.message || "Something went wrong!" });
-});
-const port = process.env.PORT || 3000;
-
-// Initialization DB connection then start server
-initDB().then(() => {
-  app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+  res.status(err.status || 500).json({
+    error: err.message || "Something went wrong!",
   });
 });
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+const port = process.env.PORT || 3000;
+
+initDB()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Server running at http://localhost:${port}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Database initialization failed:", error);
+  });
