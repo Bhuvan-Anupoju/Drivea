@@ -1,8 +1,14 @@
 import { sql } from "../config/db.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 // Generate JWT access token and attaches it to response as HTTP-Only cookie
-export const sendTokenResponse = (res, userId, statusCode = 200) => {
+export const sendTokenResponse = (
+  res,
+  userId,
+  statusCode = 200,
+  extraData = {},
+) => {
   const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: "7d",
   });
@@ -12,7 +18,7 @@ export const sendTokenResponse = (res, userId, statusCode = 200) => {
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? "none" : "lax",
-    maxAge: 7 * 24 * 60 * 60 * 7000, // 7 Days
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Days
   });
 
   res.status(statusCode).json({ token, ...extraData });
@@ -23,7 +29,7 @@ export const sendTokenResponse = (res, userId, statusCode = 200) => {
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    if (!name?.tirm() || !email.trim() || !password.trim()) {
+    if (!name?.trim() || !email.trim() || !password.trim()) {
       return res
         .status(400)
         .json({ error: "Name,email and password are required." });
@@ -41,7 +47,7 @@ export const registerUser = async (req, res) => {
 
     const storageLimit = Number(process.env.MAX_STORAGE_PER_USER || 1073741824);
     const [user] =
-      await sql`INSERT INTO user (name,email,password,storage_limit) 
+      await sql`INSERT INTO users (name,email,password,storage_limit) 
       VALUES (${name.trim()},${normalizedEmail},${hashedPassword},${storageLimit}) 
       RETURNING id, name, email, storage_used, storage_limit, created_at, updated_at`;
 

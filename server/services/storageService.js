@@ -5,10 +5,15 @@ import {
 } from "../utils/s3Helper.js";
 
 // Get all descendant folder ID for a given folder including the root folder Id iteself
-export const getFolderHierarchyIds = async () => {
+
+export const getFolderHierarchyIds = async (folderId, ownerId) => {
   const descendants = await sql`
-  SELECT id FROM folders 
-  WHERE ${folderId} = ANY(path:: text[]) AND owner_id = ${owner.id}`;
+    SELECT id
+    FROM folders
+    WHERE ${folderId} = ANY(path::text[])
+      AND owner_id = ${ownerId}
+  `;
+
   return [folderId, ...descendants.map((f) => f.id)];
 };
 
@@ -23,11 +28,18 @@ export const adjustUserStorage = async (userId, deltaBytes) => {
   return user ? Number(user.storage_used) : null;
 };
 // Remove share links associated with given resource IDs.
+
 export const cleanupShareLinks = async (fileIds = [], folderIds = []) => {
-  if (fileIds.lenght === 0 && folderIds.length === 0) return;
+  if (fileIds.length === 0 && folderIds.length === 0) {
+    return;
+  }
+
   const allIds = [...fileIds, ...folderIds];
+
   await sql`
-  DELETE FROM share_links WHERE resource_id = ANY(${allIds}::uuid[])`;
+    DELETE FROM share_links
+    WHERE resource_id = ANY(${allIds}::uuid[])
+  `;
 };
 
 // Soft delete a folder and all its contents (recursive subfolders & files)
@@ -76,23 +88,31 @@ export const restoreFolderHierarchy = async (folderId, ownerId) => {
 };
 
 // Permanently delete a folder and all its contents (recursive subfolders and files).
+
 export const permanentDeleteFolderHierarchy = async (folderId, ownerId) => {
   const allFolderIds = await getFolderHierarchyIds(folderId, ownerId);
 
   const files = await sql`
-  SELECT id, s3_key, size FROM files
-  WHERE folder_id = ANY(${allFolderIds}::uuid[]) AND owner_id = ${ownerId}`;
+    SELECT id, s3_key, size
+    FROM files
+    WHERE folder_id = ANY(${allFolderIds}::uuid[])
+      AND owner_id = ${ownerId}
+  `;
 
   const s3Keys = files.map((f) => f.s3_key);
-  const fileIds = files.map((f) => f.s3_key);
+  const fileIds = files.map((f) => f.id);
+
   const totalFreedSize = files.reduce((acc, f) => acc + Number(f.size), 0);
 
   await Promise.all([
     s3Keys.length > 0 ? deleteMultipleFromStorage(s3Keys) : Promise.resolve(),
+
     cleanupShareLinks(fileIds, allFolderIds),
+
     fileIds.length > 0
       ? sql`DELETE FROM files WHERE id = ANY(${fileIds}::uuid[])`
       : Promise.resolve(),
+
     sql`DELETE FROM folders WHERE id = ANY(${allFolderIds}::uuid[])`,
   ]);
 
@@ -113,28 +133,50 @@ export const permanentDeleteFileRecord = async (file, ownerId) => {
 };
 
 // Permanently empty user's trashbin.
+
 export const emptyTrashHierarchy = async (ownerId) => {
   const [trashedFiles, trashedFolders] = await Promise.all([
-    sql`SELECT id, s3_key, size FROM files WHERE owner_id = ${ownerId} AND is_trashed = true`,
-    sql`SELECT id FROM folders WHERE owner_id = ${ownerId} AND is_trashed = true`,
+    sql`
+      SELECT id, s3_key, size
+      FROM files
+      WHERE owner_id = ${ownerId}
+        AND is_trashed = true
+    `,
+    sql`
+      SELECT id
+      FROM folders
+      WHERE owner_id = ${ownerId}
+        AND is_trashed = true
+    `,
   ]);
-  const s3Keys = trashedFiles.map((f) => {
-    f.s3_key;
-  });
+
+  const s3Keys = trashedFiles.map((f) => f.s3_key);
+  const trashedFileIds = trashedFiles.map((f) => f.id);
+  const trashedFolderIds = trashedFolders.map((f) => f.id);
+
   const totalFreedBytes = trashedFiles.reduce(
     (acc, f) => acc + Number(f.size),
     0,
   );
-  const trashedFileIds = trashedFiles.map((f) => f.id);
-  const trashedFolderIds = trashedFolders.map((f) => f.id);
+
   await Promise.all([
     s3Keys.length > 0 ? deleteMultipleFromStorage(s3Keys) : Promise.resolve(),
+
     cleanupShareLinks(trashedFileIds, trashedFolderIds),
+
     sql`
-    DELETE FROM files WHERE owner_id = ${ownerId} AND is_trashed = true`,
+      DELETE FROM files
+      WHERE owner_id = ${ownerId}
+        AND is_trashed = true
+    `,
+
     sql`
-    DELETE FROM folders WHERE owner_id = ${ownerId} AND is_trashed = true`,
+      DELETE FROM folders
+      WHERE owner_id = ${ownerId}
+        AND is_trashed = true
+    `,
   ]);
+
   if (totalFreedBytes > 0) {
     await adjustUserStorage(ownerId, -totalFreedBytes);
   }

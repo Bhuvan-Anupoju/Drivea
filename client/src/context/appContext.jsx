@@ -36,7 +36,7 @@ export const AppProvider = ({ children }) => {
   // Refresh User Profile & Storage stats
   const refreshUser = useCallback(async () => {
     try {
-      const { data } = await api.get("api/auth/me");
+      const { data } = await api.get("/api/auth/me");
       setUser(data.user);
       return data.user;
     } catch (error) {

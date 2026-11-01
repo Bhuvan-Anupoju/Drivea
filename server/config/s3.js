@@ -1,7 +1,7 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import "dotenv/config";
 
-export const BUCKET_NAME = process.env.AWS_S3_BUCKET || "drive-bucket";
+export const BUCKET_NAME = process.env.AWS_S3_BUCKET || "drivea-bucket";
 
 export const client = new S3Client({
   region: process.env.AWS_REGION,
