@@ -13,7 +13,7 @@ const app = express();
 
 const allowedOrigins = (
   process.env.ORIGINS ||
-  "https://drivea-uf4y-bhuvan9.vercel.app" ||
+  "https://drivea-uf4y-git-main-bhuvan9.vercel.app" ||
   "http://localhost:5173"
 )
   .split(",")
